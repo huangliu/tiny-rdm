@@ -96,13 +96,32 @@ jobs:
           upload_url="https://uploads.github.com/repos/${GITHUB_REPOSITORY}/releases/${{ github.event.release.id }}/assets"
           curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Content-Type: application/zip" --data-binary @$filepath "$upload_url?name=$filename"
 
+      - uses: actions/checkout@v2
+        with:
+          repository: create-dmg/create-dmg
+          path: ./build/create-dmg
+          ref: main
+
       - name: Build macOS DMG
         shell: bash
-        working-directory: ./build/bin
+        working-directory: ./build
         run: |
           rm TinyRDM-${{ steps.normalise_platform.outputs.tag }}.zip
-          ln -s /Applications Applications
-          hdiutil create -volname "Tiny RDM" -srcfolder . -ov -format UDBZ TinyRDM-${{ steps.normalise_platform.outputs.tag }}.dmg
+          ./build/create-dmg/create-dmg \
+            --no-internet-enable \
+            --volname "Tiny RDM.dmg" \
+            --volicon "bin/Tiny RDM.app/Contents/Resources/iconfile.icns" \
+            --background "dmg/background.tiff" \
+            --text-size 12 \
+            --window-pos 400 400 \
+            --window-size 660 450 \
+            --icon-size 80 \
+            --icon "Tiny RDM.app" 180 180 \
+            --hide-extension "Tiny RDM.app" \
+            --app-drop-link 480 180 \
+            --add-file "Damaged Repair" "dmg/fix-app_zh" 430 290 \
+            "bin/TinyRDM-${{ steps.normalise_platform.outputs.tag }}.dmg" \
+            "bin"
 
       - name: Upload release asset (DMG Package)
         shell: bash
