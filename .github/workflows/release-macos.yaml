@@ -96,7 +96,8 @@ jobs:
 #          upload_url="https://uploads.github.com/repos/${GITHUB_REPOSITORY}/releases/${{ github.event.release.id }}/assets"
 #          curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Content-Type: application/zip" --data-binary @$filepath "$upload_url?name=$filename"
 
-      - uses: actions/checkout@v2
+      - name: Checkout create-image
+        uses: actions/checkout@v2
         with:
           repository: create-dmg/create-dmg
           path: ./build/create-dmg
@@ -106,7 +107,7 @@ jobs:
         shell: bash
         working-directory: ./build
         run: |
-          mv tinyrdm.app "Tiny RDM.app"
+          mv bin/tinyrdm.app "bin/Tiny RDM.app"
           ./build/create-dmg/create-dmg \
             --no-internet-enable \
             --volname "Tiny RDM.dmg" \
