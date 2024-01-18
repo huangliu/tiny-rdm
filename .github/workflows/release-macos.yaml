@@ -108,7 +108,7 @@ jobs:
         working-directory: ./build
         run: |
           mv bin/tinyrdm.app "bin/Tiny RDM.app"
-          ./build/create-dmg/create-dmg \
+          ./create-dmg/create-dmg \
             --no-internet-enable \
             --volname "Tiny RDM.dmg" \
             --volicon "bin/Tiny RDM.app/Contents/Resources/iconfile.icns" \
