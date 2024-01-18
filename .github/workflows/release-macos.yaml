@@ -110,7 +110,7 @@ jobs:
           mv bin/tinyrdm.app "bin/Tiny RDM.app"
           ./create-dmg/create-dmg \
             --no-internet-enable \
-            --volname "Tiny RDM.dmg" \
+            --volname "Tiny RDM" \
             --volicon "bin/Tiny RDM.app/Contents/Resources/iconfile.icns" \
             --background "dmg/background.tiff" \
             --text-size 12 \
