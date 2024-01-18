@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         platform:
-#          - darwin/amd64
+          #          - darwin/amd64
           - darwin/arm64
     #          - darwin/universal
     steps:
@@ -80,22 +80,6 @@ jobs:
       #          AC_USERNAME: ${{ secrets.AC_USERNAME }}
       #          AC_PASSWORD: ${{ secrets.AC_PASSWORD }}
 
-#      - name: Compress macOS app
-#        shell: bash
-#        working-directory: ./build/bin
-#        run: |
-#          mv tinyrdm.app "Tiny RDM.app"
-#          zip -r TinyRDM-${{ steps.normalise_platform.outputs.tag }}.zip "Tiny RDM.app"
-#
-#      - name: Upload release asset (ZIP Package)
-#        shell: bash
-#        working-directory: ./build/bin/
-#        run: |
-#          filepath="TinyRDM-${{ steps.normalise_platform.outputs.tag }}.zip"
-#          filename="TinyRDM_${{ steps.normalise_version.outputs.version }}_${{ steps.normalise_platform.outputs.tag }}.zip"
-#          upload_url="https://uploads.github.com/repos/${GITHUB_REPOSITORY}/releases/${{ github.event.release.id }}/assets"
-#          curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Content-Type: application/zip" --data-binary @$filepath "$upload_url?name=$filename"
-
       - name: Checkout create-image
         uses: actions/checkout@v2
         with:
@@ -120,7 +104,8 @@ jobs:
             --icon "Tiny RDM.app" 180 180 \
             --hide-extension "Tiny RDM.app" \
             --app-drop-link 480 180 \
-            --add-file "Damaged Repair" "dmg/fix-app_zh" 430 290 \
+            --add-file "Repair" "dmg/fix-app" 430 290 \
+            --add-file "损坏修复" "dmg/fix-app_zh" 230 290 \
             "bin/TinyRDM-${{ steps.normalise_platform.outputs.tag }}.dmg" \
             "bin"
 
