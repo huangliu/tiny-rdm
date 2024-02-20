@@ -65,7 +65,7 @@ jobs:
         shell: bash
         run: |
           CGO_ENABLED=1 wails build -clean -platform ${{ matrix.platform }} \
-          -upx -webview2 embed \
+          -webview2 embed \
           -ldflags "-X main.version=${{ github.event.release.tag_name }} -X main.gaMeasurementID=${{ secrets.GA_MEASUREMENT_ID }} -X main.gaSecretKey=${{ secrets.WINDOWS_GA_SECRET }}"
 
       - name: Compress portable binary
