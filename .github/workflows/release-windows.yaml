@@ -11,6 +11,7 @@ jobs:
     strategy:
       matrix:
         platform:
+#          - windows/amd64
           - windows/arm64
     steps:
       - name: Checkout source code
@@ -82,7 +83,7 @@ jobs:
 
       - name: Build Windows NSIS installer
         shell: bash
-        run: CGO_ENABLED=1 wails build -clean -platform ${{ matrix.platform }} -nsis -upx -webview2 embed -ldflags "-X main.version=${{ github.event.release.tag_name }}"
+        run: CGO_ENABLED=1 wails build -clean -platform ${{ matrix.platform }} -nsis -webview2 embed -ldflags "-X main.version=${{ github.event.release.tag_name }}"
 
       - name: Codesign Windows NSIS installer
         working-directory: ./build/bin
@@ -92,13 +93,13 @@ jobs:
           Set-Content -Path certificate\certificate.txt -Value '${{ secrets.WIN_SIGNING_CERT }}'
           certutil -decode certificate\certificate.txt certificate\certificate.pfx
           echo "Signing TinyRDM installer"
-          & 'C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe' sign /fd sha256 /tr http://ts.ssl.com /f certificate\certificate.pfx /p '${{ secrets.WIN_SIGNING_CERT_PASSWORD }}' TinyRDM-amd64-installer.exe
+          & 'C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe' sign /fd sha256 /tr http://ts.ssl.com /f certificate\certificate.pfx /p '${{ secrets.WIN_SIGNING_CERT_PASSWORD }}' TinyRDM-${{ steps.normalise_platform.outputs.tag }}-installer.exe
 
       - name: Upload release asset (Installer)
         shell: bash
         working-directory: ./build/bin/
         run: |
-          filepath="TinyRDM-amd64-installer.exe"
+          filepath="TinyRDM-${{ steps.normalise_platform.outputs.tag }}-installer.exe"
           filename="TinyRDM_Setup_${{ steps.normalise_version.outputs.version }}_${{ steps.normalise_platform.outputs.tag }}.exe"
           upload_url="https://uploads.github.com/repos/${GITHUB_REPOSITORY}/releases/${{ github.event.release.id }}/assets"
           curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Content-Type: application/octet-stream" --data-binary @$filepath "$upload_url?name=$filename"
