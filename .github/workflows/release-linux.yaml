@@ -101,7 +101,7 @@ jobs:
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
         with:
-          files: tiny-rdm_${{ steps.normalise_version.outputs.version }}_amd64.deb
+          files: ./build/linux/tiny-rdm_${{ steps.normalise_version.outputs.version }}_amd64.deb
           token: ${{ secrets.GITHUB_TOKEN }}
 
 #      - name: Upload release asset
