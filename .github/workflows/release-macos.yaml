@@ -110,7 +110,7 @@ jobs:
             "bin"
 
       - name: Rename dmg
-        working-directory: ./build/linux
+        working-directory: ./build/bin
         run: mv "TinyRDM-${{ steps.normalise_platform.outputs.tag }}.dmg" "TinyRDM_${{ steps.normalise_version.outputs.version }}_${{ steps.normalise_platform.outputs.tag }}.dmg"
 
       - name: Upload release asset (DMG Package)
