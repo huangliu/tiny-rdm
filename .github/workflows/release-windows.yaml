@@ -21,7 +21,7 @@ jobs:
         id: normalise_platform
         shell: bash
         run: |
-          tag=$(echo ${{ matrix.platform }} | sed -e 's/\//_/g')
+          tag=$(echo ${{ matrix.platform }} | sed -e 's/\//_/g' -e 's/amd64/x64/g')
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
       - name: Normalise version tag
