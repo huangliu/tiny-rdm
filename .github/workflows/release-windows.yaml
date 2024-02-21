@@ -74,7 +74,7 @@ jobs:
 
       - name: Rename zip package
         working-directory: ./build/bin
-        run: rename "tiny-rdm.zip" "TinyRDM_Portable_${{ steps.normalise_version.outputs.version }}_${{ steps.normalise_platform.outputs.tag }}.zip"
+        run: Rename-Item -Path  "tiny-rdm.zip" -NewName "TinyRDM_Portable_${{ steps.normalise_version.outputs.version }}_${{ steps.normalise_platform.outputs.tag }}.zip"
 
       - name: Upload release asset (Portable)
         uses: softprops/action-gh-release@v1
