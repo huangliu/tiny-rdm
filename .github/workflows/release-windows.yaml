@@ -18,7 +18,6 @@ jobs:
       matrix:
         platform:
           - windows/amd64
-          - windows/arm64
     steps:
       - name: Checkout source code
         uses: actions/checkout@v3
@@ -81,12 +80,12 @@ jobs:
 
       - name: Compress portable binary
         working-directory: ./build/bin
-        run: Compress-Archive "Tiny RDM.exe" "TinyRDM_Portable_${{ steps.normalise_version.outputs.version }}_${{ steps.normalise_platform.outputs.tag }}.zip"
+        run: Compress-Archive "Tiny RDM.exe" "TinyRDM_Portable_${{ steps.normalise_version.outputs.version }}_${{ steps.platform_name.outputs.tag }}.zip"
 
       - name: Upload release asset (Portable)
         uses: softprops/action-gh-release@v1
         with:
-          files: ./build/bin/TinyRDM_Portable_${{ steps.normalise_version.outputs.version }}_${{ steps.normalise_platform.outputs.tag }}.zip
+          files: ./build/bin/TinyRDM_Portable_${{ steps.normalise_version.outputs.version }}_${{ steps.platform_name.outputs.tag }}.zip
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Windows NSIS installer
