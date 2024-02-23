@@ -41,8 +41,13 @@ jobs:
         id: normalise_version
         shell: bash
         run: |
-          version=$(echo ${{ github.event.release.tag_name }} | sed -e 's/v//g')
-          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event.release.tag_name }}" == "" ]; then
+            version=$(echo ${{ github.event.inputs.tag }} | sed -e 's/v//g')
+            echo "version=$version" >> "$GITHUB_OUTPUT"
+          else
+            version=$(echo ${{ github.event.release.tag_name }} | sed -e 's/v//g')
+            echo "version=$version" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Setup Go
         uses: actions/setup-go@v4
@@ -88,7 +93,7 @@ jobs:
       - name: Upload release asset (Portable)
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.normalise_version.outputs.version }}
+          tag_name: v${{ steps.normalise_version.outputs.version }}
           files: ./build/bin/TinyRDM_Portable_${{ steps.normalise_version.outputs.version }}_${{ steps.normalise_platform.outputs.tag }}.zip
           token: ${{ secrets.GITHUB_TOKEN }}
 
