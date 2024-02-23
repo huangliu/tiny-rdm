@@ -8,7 +8,7 @@ on:
       tag:
         description: 'Tag to trigger the workflow'
         required: true
-        default: 'v1.0.0'
+        default: '0'
 
 jobs:
   release:
@@ -18,6 +18,7 @@ jobs:
       matrix:
         platform:
           - windows/amd64
+#          - windows/arm64
     steps:
       - name: Checkout source code
         uses: actions/checkout@v3
@@ -30,9 +31,11 @@ jobs:
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
       - name: Normalise platform name
-        id: platform_name
+        id: normalise_platform_name
         shell: bash
-        run: tag=$(echo ${{ matrix.platform }} | sed -e 's/\//_/g')
+        run: |
+          pname=$(echo ${{ matrix.platform }} | sed -e 's/\//_/g')
+          echo "pname=$pname" >> "$GITHUB_OUTPUT"
 
       - name: Normalise version tag
         id: normalise_version
@@ -76,16 +79,16 @@ jobs:
         run: |
           CGO_ENABLED=1 wails build -clean -platform ${{ matrix.platform }} \
           -webview2 embed \
-          -ldflags "-X main.version=${{ github.event.release.tag_name }} -X main.gaMeasurementID=${{ secrets.GA_MEASUREMENT_ID }} -X main.gaSecretKey=${{ secrets.WINDOWS_GA_SECRET }}"
+          -ldflags "-X main.version=v${{ steps.normalise_version.outputs.version }} -X main.gaMeasurementID=${{ secrets.GA_MEASUREMENT_ID }} -X main.gaSecretKey=${{ secrets.WINDOWS_GA_SECRET }}"
 
       - name: Compress portable binary
         working-directory: ./build/bin
-        run: Compress-Archive "Tiny RDM.exe" "TinyRDM_Portable_${{ steps.normalise_version.outputs.version }}_${{ steps.platform_name.outputs.tag }}.zip"
+        run: Compress-Archive "Tiny RDM.exe" "TinyRDM_Portable_${{ steps.normalise_version.outputs.version }}_${{ steps.normalise_platform.outputs.tag }}.zip"
 
       - name: Upload release asset (Portable)
         uses: softprops/action-gh-release@v1
         with:
-          files: ./build/bin/TinyRDM_Portable_${{ steps.normalise_version.outputs.version }}_${{ steps.platform_name.outputs.tag }}.zip
+          files: ./build/bin/TinyRDM_Portable_${{ steps.normalise_version.outputs.version }}_${{ steps.normalise_platform.outputs.tag }}.zip
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Windows NSIS installer
@@ -93,7 +96,7 @@ jobs:
         run: |
           CGO_ENABLED=1 wails build -clean -platform ${{ matrix.platform }} \
           -nsis -webview2 embed \
-          -ldflags "-X main.version=${{ github.event.release.tag_name }}"
+          -ldflags "-X main.version=v${{ steps.normalise_version.outputs.version }}"
 
       - name: Codesign Windows NSIS installer
         working-directory: ./build/bin
@@ -103,7 +106,7 @@ jobs:
           Set-Content -Path certificate\certificate.txt -Value '${{ secrets.WIN_SIGNING_CERT }}'
           certutil -decode certificate\certificate.txt certificate\certificate.pfx
           echo "Signing TinyRDM installer"
-          & 'C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe' sign /fd sha256 /tr http://ts.ssl.com /f certificate\certificate.pfx /p '${{ secrets.WIN_SIGNING_CERT_PASSWORD }}' TinyRDM-${{ matrix.platform }}-installer.exe
+          & 'C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe' sign /fd sha256 /tr http://ts.ssl.com /f certificate\certificate.pfx /p '${{ secrets.WIN_SIGNING_CERT_PASSWORD }}' TinyRDM-${{ steps.normalise_platform_name.outputs.pname }}-installer.exe
 
       - name: Rename installer
         working-directory: ./build/bin
@@ -112,5 +115,6 @@ jobs:
       - name: Upload release asset (Installer)
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ steps.normalise_version.outputs.version }}
           files: ./build/bin/TinyRDM_Setup_${{ steps.normalise_version.outputs.version }}_${{ steps.normalise_platform.outputs.tag }}.exe
           token: ${{ secrets.GITHUB_TOKEN }}
