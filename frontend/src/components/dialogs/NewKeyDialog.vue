@@ -154,7 +154,11 @@ const onAdd = async () => {
             value = defaultValue[type]
         }
         // await browserStore.reloadKey({server, db, key: trim(key)})
-        const { success, msg, nodeKey } = await browserStore.setKey({
+        const {
+            success,
+            msg,
+            nodeKey = '',
+        } = await browserStore.setKey({
             server,
             db,
             key: trim(key),
@@ -165,8 +169,11 @@ const onAdd = async () => {
         if (success) {
             // select current key
             await nextTick()
-            tabStore.setSelectedKeys(server, nodeKey)
-            browserStore.reloadKey({ server, db, key })
+            const selectedDB = browserStore.getSelectedDB(server)
+            if (selectedDB === db) {
+                tabStore.setSelectedKeys(server, nodeKey)
+                browserStore.reloadKey({ server, db, key })
+            }
         } else if (!isEmpty(msg)) {
             $message.error(msg)
         }
@@ -191,13 +198,14 @@ const onImport = () => {
     <n-modal
         v-model:show="dialogStore.newKeyDialogVisible"
         :closable="false"
-        :close-on-esc="false"
         :mask-closable="false"
         :show-icon="false"
         :title="$t('dialogue.key.new')"
+        close-on-esc
         preset="dialog"
         style="width: 600px"
-        transform-origin="center">
+        transform-origin="center"
+        @esc="onClose">
         <n-scrollbar ref="scrollRef" style="max-height: 500px">
             <n-form
                 ref="newFormRef"

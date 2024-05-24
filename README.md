@@ -51,7 +51,7 @@ Linux.</strong>
 * Support import/export data.
 * Support publish/subscribe.
 * Support import/export connection profile.
-* Custom data encoder and decoder for value display.
+* Custom data encoder and decoder for value display ([Here are the instructions](https://redis.tinycraft.cc/guide/custom-decoder/)).
 
 ## Installation
 
@@ -86,6 +86,13 @@ git clone https://github.com/tiny-craft/tiny-rdm --depth=1
 
 ```bash
 npm install --prefix ./frontend
+```
+
+or
+
+```bash
+cd frontend
+npm install
 ```
 
 ### Compile and Run

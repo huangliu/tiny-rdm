@@ -1,7 +1,6 @@
 <script setup>
 import { computed, reactive, ref, watchEffect } from 'vue'
 import useDialog from 'stores/dialog'
-import { useI18n } from 'vue-i18n'
 import useBrowserStore from 'stores/browser.js'
 import FileSaveInput from '@/components/common/FileSaveInput.vue'
 import { isEmpty, map, size } from 'lodash'
@@ -40,7 +39,6 @@ const exportEnable = computed(() => {
     return !isEmpty(exportKeyForm.keys) && !isEmpty(exportKeyForm.file)
 })
 
-const i18n = useI18n()
 const onConfirmExport = async () => {
     try {
         exporting.value = true
@@ -64,12 +62,13 @@ const onClose = () => {
     <n-modal
         v-model:show="dialogStore.exportKeyDialogVisible"
         :closable="false"
-        :close-on-esc="false"
         :mask-closable="false"
         :show-icon="false"
         :title="$t('dialogue.export.name')"
+        close-on-esc
         preset="dialog"
-        transform-origin="center">
+        transform-origin="center"
+        @esc="onClose">
         <n-spin :show="loading">
             <n-form :model="exportKeyForm" :show-require-mark="false" label-placement="top">
                 <n-grid :x-gap="10">

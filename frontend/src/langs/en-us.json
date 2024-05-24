@@ -40,6 +40,7 @@
       "font_tip": "Select or input font name",
       "font_size": "Font Size",
       "scan_size": "Default Size for SCAN",
+      "scan_size_tip": "Default return number of elements for SCAN/HSCAN/SSCAN/ZSCAN",
       "key_icon_style": "Key Icon Style",
       "key_icon_style0": "Compact",
       "key_icon_style1": "Full Name",
@@ -141,7 +142,7 @@
     "remove_key": "Remove Key",
     "new_key": "New Key",
     "load_more": "Load More Keys",
-    "load_all": "Load All Left Keys",
+    "load_all": "Load Remaining Keys",
     "load_more_entries": "Load More",
     "load_all_entries": "Load All",
     "more_action": "More Actions",
@@ -263,8 +264,8 @@
         "auto_discover": "Auto Discover",
         "password": "Master Password",
         "username": "Master Username",
-        "pwd_tip": "(Optional) Master auth username",
-        "usr_tip": "(Optional) Master auth password (Redis > 6.0)"
+        "pwd_tip": "(Optional) Master auth password (Redis > 6.0)",
+        "usr_tip": "(Optional) Master auth username"
       },
       "cluster": {
         "title": "Cluster",
@@ -327,7 +328,7 @@
     "filter": {
       "set_key_filter": "Set Key Filter",
       "filter_pattern": "Pattern",
-      "filter_pattern_tip": "* matches 0 or more chars, e.g. 'key*'  \n? matches single char, e.g. 'key?'\n[] matches range, e.g. 'key[1-3]'\n\\ escapes special chars",
+      "filter_pattern_tip": "Filter by directly input, and scan by press 'Enter'.\n\n* matches 0 or more chars, e.g. 'key*'  \n? matches single char, e.g. 'key?'\n[] matches range, e.g. 'key[1-3]'\n\\ escapes special chars",
       "exact_match_tip": "Exact Match"
     },
     "export": {
@@ -456,7 +457,7 @@
     "copy_log": "Copy Log",
     "save_log": "Save Log",
     "clean_log": "Clean Log",
-    "always_show_last": "Always Show Latest"
+    "always_show_last": "Auto Scroll to Latest"
   },
   "pubsub": {
     "title": "Pub/Sub",
@@ -469,6 +470,6 @@
     "channel": "Channel",
     "message": "Message",
     "receive_message": "Received {total} messages",
-    "always_show_last": "Always Show Latest"
+    "always_show_last": "Auto Scroll to Latest"
   }
 }

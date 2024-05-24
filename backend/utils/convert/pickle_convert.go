@@ -1,5 +1,10 @@
 package convutil
 
+import (
+	"os/exec"
+	"runtime"
+)
+
 type PickleConvert struct {
 	CmdConvert
 }
@@ -40,13 +45,21 @@ func NewPickleConvert() *PickleConvert {
 	}
 	c.DecodePath, c.EncodePath = "python3", "python3"
 	var err error
-	if _, err = runCommand(c.DecodePath, "--version"); err != nil {
+	if _, err = exec.LookPath(c.DecodePath); err != nil {
 		c.DecodePath, c.EncodePath = "python", "python"
-		if _, err = runCommand(c.DecodePath, "--version"); err != nil {
+		if _, err = exec.LookPath(c.DecodePath); err != nil {
 			return nil
 		}
 	}
 	// check if pickle available
+	if runtime.GOOS == "darwin" {
+		// the xcode-select installation prompt may appear on macOS
+		// so check it manually in advance
+		if _, err = exec.LookPath("xcode-select"); err != nil {
+			return nil
+		}
+	}
+
 	if _, err = runCommand(c.DecodePath, "-c", "import pickle"); err != nil {
 		return nil
 	}

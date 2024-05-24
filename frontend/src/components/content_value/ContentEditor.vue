@@ -23,6 +23,10 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
+    resetKey: {
+        type: String,
+        default: '',
+    },
     offsetKey: {
         type: String,
         default: '',
@@ -145,6 +149,17 @@ watch(
 )
 
 watch(
+    () => props.resetKey,
+    async () => {
+        if (editorNode != null) {
+            editorNode.setValue(props.content)
+            await nextTick(() => emit('reset', props.content))
+            updateScroll()
+        }
+    },
+)
+
+watch(
     () => props.offsetKey,
     () => {
         // reset scroll offset when key changed
@@ -233,5 +248,9 @@ onUnmounted(() => {
     bottom: 2px;
     left: 2px;
     right: 2px;
+}
+
+:deep(.line-numbers) {
+    white-space: nowrap;
 }
 </style>

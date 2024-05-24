@@ -40,6 +40,7 @@
       "font_tip": "Sélectionner ou saisir le nom de la police",
       "font_size": "Taille de la police",
       "scan_size": "Taille par défaut pour SCAN",
+      "scan_size_tip": "Nombre d'éléments retournés par les commandes SCAN/HSCAN/SSCAN/ZSCAN",
       "key_icon_style": "Style d'icône de clé",
       "key_icon_style0": "Compact",
       "key_icon_style1": "Nom complet",
@@ -263,8 +264,8 @@
         "auto_discover": "Découverte automatique",
         "password": "Mot de passe principal",
         "username": "Nom d'utilisateur principal",
-        "pwd_tip": "(Optionnel) Nom d'utilisateur d'authentification principal",
-        "usr_tip": "(Optionnel) Mot de passe d'authentification principal (Redis > 6.0)"
+        "pwd_tip": "(Optionnel) Mot de passe d'authentification principal (Redis > 6.0)",
+        "usr_tip": "(Optionnel) Nom d'utilisateur d'authentification principal"
       },
       "cluster": {
         "title": "Cluster",
@@ -327,7 +328,7 @@
     "filter": {
       "set_key_filter": "Définir le filtre de clé",
       "filter_pattern": "Modèle",
-      "filter_pattern_tip": "* correspond à 0 ou plusieurs caractères, ex : 'key*'\n? correspond à un seul caractère, ex : 'key?'\n[] correspond à une plage, ex : 'key[1-3]' échappe les caractères spéciaux",
+      "filter_pattern_tip": "Filtrez la liste actuelle en saisissant directement, et scannez le serveur en appuyant sur 'Entrée'.\n\n* correspond à 0 ou plusieurs caractères, ex : 'key*'\n? correspond à un seul caractère, ex : 'key?'\n[] correspond à une plage, ex : 'key[1-3]' échappe les caractères spéciaux",
       "exact_match_tip": "Correspondance exacte"
     },
     "export": {
@@ -456,7 +457,7 @@
     "copy_log": "Copier le journal",
     "save_log": "Enregistrer le journal",
     "clean_log": "Nettoyer le journal",
-    "always_show_last": "Toujours afficher les dernières"
+    "always_show_last": "Défilement automatique vers le dernier message"
   },
   "pubsub": {
     "title": "Pub/Sub",
@@ -469,6 +470,6 @@
     "channel": "Canal",
     "message": "Message",
     "receive_message": "{total} messages reçus",
-    "always_show_last": "Toujours afficher les derniers"
+    "always_show_last": "Défilement automatique vers le dernier message"
   }
 }

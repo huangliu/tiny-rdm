@@ -192,13 +192,14 @@ const onClose = () => {
         v-model:show="dialogStore.preferencesDialogVisible"
         :auto-focus="false"
         :closable="false"
-        :close-on-esc="false"
         :mask-closable="false"
         :show-icon="false"
         :title="$t('preferences.name')"
+        close-on-esc
         preset="dialog"
         style="width: 640px"
-        transform-origin="center">
+        transform-origin="center"
+        @esc="onClose">
         <!-- FIXME: set loading will slow down appear animation of dialog in linux -->
         <!-- <n-spin :show="loading"> -->
         <n-tabs
@@ -253,7 +254,18 @@ const onClose = () => {
                         <n-form-item-gi :label="$t('preferences.general.font_size')" :span="24">
                             <n-input-number v-model:value="prefStore.general.fontSize" :max="65535" :min="1" />
                         </n-form-item-gi>
-                        <n-form-item-gi :label="$t('preferences.general.scan_size')" :span="12">
+                        <n-form-item-gi :span="12">
+                            <template #label>
+                                {{ $t('preferences.general.scan_size') }}
+                                <n-tooltip trigger="hover">
+                                    <template #trigger>
+                                        <n-icon :component="Help" />
+                                    </template>
+                                    <div class="text-block">
+                                        {{ $t('preferences.general.scan_size_tip') }}
+                                    </div>
+                                </n-tooltip>
+                            </template>
                             <n-input-number
                                 v-model:value="prefStore.general.scanSize"
                                 :min="1"

@@ -89,14 +89,17 @@ const fieldColumn = computed(() => ({
             },
             scrollable: true,
         },
-        lineClamp: 10,
+        lineClamp: 1,
     },
     filterOptionValue: fieldFilterOption.value,
-    className: inEdit.value ? 'clickable' : '',
+    className: inEdit.value ? 'clickable wordline' : 'wordline',
     filter: (value, row) => {
         return !!~row.k.indexOf(value.toString())
     },
     render: (row) => {
+        if (row.rm === true) {
+            return h('s', {}, decodeRedisKey(row.k))
+        }
         return decodeRedisKey(row.k)
     },
 }))
@@ -121,6 +124,7 @@ const valueColumn = computed(() => ({
                   },
                   scrollable: true,
               },
+              lineClamp: 1,
           },
     // filterOptionValue: valueFilterOption.value,
     className: inEdit.value ? 'clickable' : '',
@@ -134,6 +138,9 @@ const valueColumn = computed(() => ({
         if (isCode.value) {
             return h('pre', {}, row.dv || row.v)
         }
+        if (row.rm === true) {
+            return h('s', {}, row.dv || row.v)
+        }
         return row.dv || row.v
     },
 }))
@@ -142,6 +149,8 @@ const startEdit = async (no, key, value) => {
     currentEditRow.no = no
     currentEditRow.key = key
     currentEditRow.value = value
+    currentEditRow.decode = props.decode
+    currentEditRow.format = props.format
 }
 
 const saveEdit = async (field, value, decode, format) => {
@@ -183,8 +192,11 @@ const resetEdit = () => {
     currentEditRow.no = 0
     currentEditRow.key = ''
     currentEditRow.value = null
-    currentEditRow.format = formatTypes.RAW
-    currentEditRow.decode = decodeTypes.NONE
+    // if (currentEditRow.format !== props.format || currentEditRow.decode !== props.decode) {
+    //     nextTick(() => onFormatChanged(currentEditRow.decode, currentEditRow.format))
+    // }
+    // currentEditRow.format = formatTypes.RAW
+    // currentEditRow.decode = decodeTypes.NONE
 }
 
 const actionColumn = {
@@ -198,6 +210,25 @@ const actionColumn = {
         return h(EditableTableColumn, {
             editing: false,
             bindKey: row.k,
+            canRefresh: true,
+            onRefresh: async () => {
+                const { updated, success, msg } = await browserStore.getHashField({
+                    server: props.name,
+                    db: props.db,
+                    key: keyName.value,
+                    field: row.k,
+                    decode: props.decode,
+                    format: props.format,
+                })
+                if (success) {
+                    delete props.value[index]['rm']
+                    $message.success(i18n.t('dialogue.reload_succ'))
+                } else {
+                    // update fail, the key may have been deleted
+                    $message.error(msg)
+                    props.value[index]['rm'] = true
+                }
+            },
             onCopy: async () => {
                 try {
                     const succ = await ClipboardSetText(row.v)
@@ -330,7 +361,7 @@ defineExpose({
     <div class="content-wrapper flex-box-v">
         <slot name="toolbar" />
         <div class="tb2 value-item-part flex-box-h">
-            <div class="flex-box-h">
+            <div class="flex-box-h" style="max-width: 50%">
                 <content-search-input
                     ref="searchInputRef"
                     @filter-changed="onFilterInput"
@@ -397,11 +428,12 @@ defineExpose({
                 class="entry-editor-container flex-item-expand"
                 style="width: 100%">
                 <content-entry-editor
+                    v-model:decode="currentEditRow.decode"
+                    v-model:format="currentEditRow.format"
                     v-model:fullscreen="fullEdit"
-                    :decode="currentEditRow.decode"
                     :field="currentEditRow.key"
                     :field-label="$t('common.field')"
-                    :format="currentEditRow.format"
+                    :key-path="props.keyPath"
                     :show="inEdit"
                     :value="currentEditRow.value"
                     :value-label="$t('common.value')"

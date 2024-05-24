@@ -40,6 +40,7 @@
       "font_tip": "Seleccione o ingrese el nombre de la fuente",
       "font_size": "Tamaño de fuente",
       "scan_size": "Tamaño predeterminado para SCAN",
+      "scan_size_tip": "Número de elementos devueltos por los comandos SCAN/HSCAN/SSCAN/ZSCAN",
       "key_icon_style": "Estilo de icono de clave",
       "key_icon_style0": "Compacto",
       "key_icon_style1": "Nombre completo",
@@ -263,8 +264,8 @@
         "auto_discover": "Descubrimiento automático",
         "password": "Contraseña del maestro",
         "username": "Usuario del maestro",
-        "pwd_tip": "(Opcional) Usuario de autenticación del maestro",
-        "usr_tip": "(Opcional) Contraseña de autenticación del maestro (Redis > 6.0)"
+        "pwd_tip": "(Opcional) Contraseña de autenticación del maestro (Redis > 6.0)",
+        "usr_tip": "(Opcional) Usuario de autenticación del maestro"
       },
       "cluster": {
         "title": "Clúster",
@@ -327,7 +328,7 @@
     "filter": {
       "set_key_filter": "Establecer filtro de clave",
       "filter_pattern": "Patrón",
-      "filter_pattern_tip": "* coincide con 0 o más caracteres, ej. 'key*'\n? coincide con un carácter, ej. 'key?'\n[] coincide con un rango, ej. 'key[1-3]'\n\\ escapa caracteres especiales",
+      "filter_pattern_tip": "Filtre la lista actual ingresando directamente, y escanee el servidor presionando 'Ingresar'.\n\n* coincide con 0 o más caracteres, ej. 'key*'\n? coincide con un carácter, ej. 'key?'\n[] coincide con un rango, ej. 'key[1-3]'\n\\ escapa caracteres especiales",
       "exact_match_tip": "Coincidencia exacta"
     },
     "export": {
@@ -456,7 +457,7 @@
     "copy_log": "Copiar registro",
     "save_log": "Guardar registro",
     "clean_log": "Limpiar registro",
-    "always_show_last": "Siempre mostrar el último"
+    "always_show_last": "Desplazamiento automático al último"
   },
   "pubsub": {
     "title": "Pub/Sub",
@@ -469,6 +470,6 @@
     "channel": "Canal",
     "message": "Mensaje",
     "receive_message": "Recibidos {total} mensajes",
-    "always_show_last": "Siempre mostrar el último"
+    "always_show_last": "Desplazamiento automático al último"
   }
 }

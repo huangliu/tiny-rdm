@@ -109,7 +109,7 @@ func main() {
 				Icon:    icon,
 			},
 			WebviewIsTransparent: false,
-			WindowIsTranslucent:  true,
+			WindowIsTranslucent:  false,
 		},
 		Windows: &windows.Options{
 			WebviewIsTransparent:              true,
@@ -117,6 +117,7 @@ func main() {
 			DisableFramelessWindowDecorations: true,
 		},
 		Linux: &linux.Options{
+			ProgramName:         "Tiny RDM",
 			Icon:                icon,
 			WebviewGpuPolicy:    linux.WebviewGpuPolicyOnDemand,
 			WindowIsTranslucent: true,

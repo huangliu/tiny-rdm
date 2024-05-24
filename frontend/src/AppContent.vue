@@ -110,12 +110,27 @@ onMounted(async () => {
     const maximised = await WindowIsMaximised()
     onToggleMaximize(maximised)
 })
+
+const onKeyShortcut = (e) => {
+    switch (e.key) {
+        case 'w':
+            if (e.metaKey) {
+                // close current tab
+                const tabStore = useTabStore()
+                const currentTab = tabStore.currentTab
+                if (currentTab != null) {
+                    tabStore.closeTab(currentTab.name)
+                }
+            }
+            break
+    }
+}
 </script>
 
 <template>
     <!-- app content-->
     <n-spin :show="props.loading" :style="spinStyle" :theme-overrides="{ opacitySpinning: 0 }">
-        <div id="app-content-wrapper" :style="wrapperStyle" class="flex-box-v">
+        <div id="app-content-wrapper" :style="wrapperStyle" class="flex-box-v" tabindex="0" @keydown="onKeyShortcut">
             <!-- title bar -->
             <div
                 id="app-toolbar"
@@ -133,7 +148,7 @@ onMounted(async () => {
                     }">
                     <n-space :size="3" :wrap="false" :wrap-item="false" align="center">
                         <n-avatar :size="32" :src="iconUrl" color="#0000" style="min-width: 32px" />
-                        <div style="min-width: 68px; font-weight: 800">Tiny RDM</div>
+                        <div style="min-width: 68px; white-space: nowrap; font-weight: 800">Tiny RDM</div>
                         <transition name="fade">
                             <n-text v-if="tabStore.nav === 'browser'" class="ellipsis" strong style="font-size: 13px">
                                 - {{ tabStore.currentTabName }}

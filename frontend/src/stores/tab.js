@@ -1,6 +1,8 @@
-import { assign, find, findIndex, get, indexOf, isEmpty, pullAt, remove, set, size } from 'lodash'
+import { assign, find, findIndex, get, includes, indexOf, isEmpty, pullAt, remove, set, size } from 'lodash'
 import { defineStore } from 'pinia'
 import { TabItem } from '@/objects/tabItem.js'
+import useBrowserStore from 'stores/browser.js'
+import { i18nGlobal } from '@/utils/i18n.js'
 
 const useTabStore = defineStore('tab', {
     /**
@@ -133,6 +135,17 @@ const useTabStore = defineStore('tab', {
         },
 
         /**
+         *
+         * @param {string} tabName
+         */
+        closeTab(tabName) {
+            $dialog.warning(i18nGlobal.t('dialogue.close_confirm', { name: tabName }), () => {
+                const browserStore = useBrowserStore()
+                browserStore.closeConnection(tabName)
+            })
+        },
+
+        /**
          * update or insert a new tab if not exists with the same name
          * @param {string} subTab
          * @param {string} server
@@ -244,7 +257,11 @@ const useTabStore = defineStore('tab', {
             if (!!!reset && typeof value === 'object') {
                 if (value instanceof Array) {
                     tabData.value = tabData.value || []
-                    tabData.value.push(...value)
+                    // direct deconstruction leads to 'Maximum call stack size exceeded'？
+                    // tabData.value.push(...value)
+                    for (let i = 0; i < value.length; i++) {
+                        tabData.value.push(value[i])
+                    }
                 } else {
                     tabData.value = assign(value, tabData.value || {})
                 }
@@ -654,12 +671,15 @@ const useTabStore = defineStore('tab', {
         /**
          * set expanded keys for server
          * @param {string} server
-         * @param {string[]} keys
+         * @param {string|string[]} keys
          */
         setExpandedKeys(server, keys = []) {
             /** @type TabItem**/
             let tab = find(this.tabList, { name: server })
             if (tab != null) {
+                if (typeof keys === 'string') {
+                    keys = [keys]
+                }
                 if (isEmpty(keys)) {
                     tab.expandedKeys = []
                 } else {
@@ -671,13 +691,20 @@ const useTabStore = defineStore('tab', {
         /**
          *
          * @param {string} server
-         * @param {string} key
+         * @param {string|string[]} keys
          */
-        addExpandedKey(server, key) {
+        addExpandedKey(server, keys) {
             /** @type TabItem**/
             let tab = find(this.tabList, { name: server })
             if (tab != null) {
-                tab.expandedKeys.push(key)
+                if (typeof keys === 'string') {
+                    keys = [keys]
+                }
+                for (const k of keys) {
+                    if (!includes(tab.expandedKeys, k)) {
+                        tab.expandedKeys.push(k)
+                    }
+                }
             }
         },
 
@@ -724,6 +751,7 @@ const useTabStore = defineStore('tab', {
                 if (keys == null) {
                     // select nothing
                     tab.selectedKeys = []
+                    tab.activatedKey = null
                 } else if (typeof keys === 'string') {
                     tab.selectedKeys = [keys]
                 } else {
@@ -765,9 +793,20 @@ const useTabStore = defineStore('tab', {
         },
 
         /**
-         * set activated key
+         * get activated key
+         * @param {string} server
+         * @return {string|null}
+         */
+        getActivatedKey(server) {
+            let tab = find(this.tabList, { name: server })
+            return get(tab, 'activatedKey')
+        },
+
+        /**
+         * set activated key and return current activatedKey
          * @param {string} server
          * @param {string} key
+         * @return {boolean}
          */
         setActivatedKey(server, key) {
             /** @type TabItem**/

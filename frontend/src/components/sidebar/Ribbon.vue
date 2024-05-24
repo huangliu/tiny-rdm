@@ -15,6 +15,7 @@ import { extraTheme } from '@/utils/extra_theme.js'
 import useBrowserStore from 'stores/browser.js'
 import { useRender } from '@/utils/render.js'
 import wechatUrl from '@/assets/images/wechat_official.png'
+import bilibiliUrl from '@/assets/images/bilibili_official.png'
 import QRCode from '@/components/icons/QRCode.vue'
 import Twitter from '@/components/icons/Twitter.vue'
 import { trackEvent } from '@/utils/analytics.js'
@@ -172,7 +173,6 @@ const exThemeVars = computed(() => {
                 :options="preferencesOptions"
                 :render-icon="({ icon }) => render.renderIcon(icon)"
                 :render-label="({ label }) => render.renderLabel($t(label), { class: 'context-menu-item' })"
-                content-class="nav-menu-button"
                 trigger="click"
                 @select="onSelectPreferenceMenu">
                 <icon-button :icon="Config" :size="iconSize" :stroke-width="3" />
@@ -182,7 +182,6 @@ const exThemeVars = computed(() => {
                 :icon="QRCode"
                 :size="iconSize"
                 :tooltip-delay="100"
-                class="nav-menu-button"
                 t-tooltip="ribbon.wechat_official"
                 @click="openWechatOfficial" />
             <icon-button
@@ -191,25 +190,22 @@ const exThemeVars = computed(() => {
                 :icon="Twitter"
                 :size="iconSize"
                 :tooltip-delay="100"
-                class="nav-menu-button"
                 t-tooltip="ribbon.follow_x"
                 @click="openX" />
             <icon-button
                 :icon="Github"
                 :size="iconSize"
                 :tooltip-delay="100"
-                class="nav-menu-button"
                 t-tooltip="ribbon.github"
                 @click="openGithub" />
         </div>
 
         <!-- wechat official modal -->
-        <n-modal
-            :show="showWechat"
-            transform-origin="center"
-            @close="showWechat = false"
-            @mask-click="showWechat = false">
-            <n-image :src="wechatUrl" :width="400" preview-disabled />
+        <n-modal v-model:show="showWechat" close-on-esc mask-closable transform-origin="center">
+            <n-flex vertical>
+                <n-image :src="wechatUrl" :width="400" preview-disabled />
+                <n-image :src="bilibiliUrl" :width="400" preview-disabled />
+            </n-flex>
         </n-modal>
     </div>
 </template>
@@ -284,15 +280,10 @@ const exThemeVars = computed(() => {
     .nav-menu-item {
         align-items: center;
         padding: 10px 0 15px;
-        gap: 20px;
         --wails-draggable: none;
 
-        .nav-menu-button {
-            margin-bottom: 6px;
-
-            :hover {
-                color: v-bind('themeVars.primaryColor');
-            }
+        button {
+            margin: 10px 0;
         }
     }
 }
