@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         platform:
-          - linux/aarch64
+          - linux/arm64
 
     steps:
       - name: Checkout source code
@@ -35,7 +35,7 @@ jobs:
         run: |
            if [ "${{ matrix.platform }}" == "linux/amd64" ]; then
              echo "arch=x86_64" >> "$GITHUB_OUTPUT"
-           elif [ "${{ matrix.platform }}" == "linux/aarch64" ]; then
+           elif [ "${{ matrix.platform }}" == "linux/arm64" ]; then
              echo "arch=aarch64" >> "$GITHUB_OUTPUT"
            fi
 
