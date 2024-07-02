@@ -13,7 +13,6 @@ import Add from '@/components/icons/Add.vue'
 import Layer from '@/components/icons/Layer.vue'
 import Delete from '@/components/icons/Delete.vue'
 import useDialogStore from 'stores/dialog.js'
-import { ClipboardSetText } from 'wailsjs/runtime/runtime.js'
 import useConnectionStore from 'stores/connections.js'
 import useTabStore from 'stores/tab.js'
 import IconButton from '@/components/common/IconButton.vue'
@@ -26,7 +25,7 @@ import RedisTypeTag from '@/components/common/RedisTypeTag.vue'
 import usePreferencesStore from 'stores/preferences.js'
 import { typesIconStyle } from '@/consts/support_redis_type.js'
 import { nativeRedisKey } from '@/utils/key_convert.js'
-import { isMacOS } from '@/utils/platform.js'
+import copy from 'copy-text-to-clipboard'
 
 const props = defineProps({
     server: String,
@@ -321,15 +320,8 @@ const handleKeyCopy = () => {
     }
 
     if (node.type === ConnectionType.RedisValue) {
-        ClipboardSetText(nativeRedisKey(node.redisKeyCode || node.redisKey))
-            .then((succ) => {
-                if (succ) {
-                    $message.success(i18n.t('interface.copy_succ'))
-                }
-            })
-            .catch((e) => {
-                $message.error(e.message)
-            })
+        copy(nativeRedisKey(node.redisKeyCode || node.redisKey))
+        $message.success(i18n.t('interface.copy_succ'))
     }
 }
 
@@ -359,7 +351,7 @@ const onKeyShortcut = (e) => {
             handleSelectContextMenu('value_reload')
             break
         case 'r':
-            if (e.metaKey && isMacOS()) {
+            if (e.metaKey) {
                 handleSelectContextMenu('value_reload')
             }
             break
@@ -413,15 +405,8 @@ const handleSelectContextMenu = (action) => {
             break
         case 'key_copy':
         case 'value_copy':
-            ClipboardSetText(nativeRedisKey(redisKey))
-                .then((succ) => {
-                    if (succ) {
-                        $message.success(i18n.t('interface.copy_succ'))
-                    }
-                })
-                .catch((e) => {
-                    $message.error(e.message)
-                })
+            copy(nativeRedisKey(redisKey))
+            $message.success(i18n.t('interface.copy_succ'))
             break
         case 'db_loadall':
             if (node != null && !!!node.loading) {

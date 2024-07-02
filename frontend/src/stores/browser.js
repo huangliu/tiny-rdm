@@ -11,6 +11,7 @@ import {
     ConvertValue,
     DeleteKey,
     DeleteKeys,
+    DeleteKeysByPattern,
     ExportKey,
     FlushDB,
     GetClientList,
@@ -110,7 +111,7 @@ const useBrowserStore = defineStore('browser', {
 
         /**
          * get database info list
-         * @param server
+         * @param {string} server
          * @return {RedisDatabaseItem[]}
          */
         getDBList(server) {
@@ -119,6 +120,18 @@ const useBrowserStore = defineStore('browser', {
                 return serverInst.getDatabase()
             }
             return []
+        },
+
+        /**
+         * get server version
+         * @param {string} server
+         */
+        getServerVersion(server) {
+            const serverInst = this.servers[server]
+            if (serverInst != null) {
+                return serverInst.version
+            }
+            return '1.0.0'
         },
 
         /**
@@ -239,7 +252,7 @@ const useBrowserStore = defineStore('browser', {
             // if (connNode == null) {
             //     throw new Error('no such connection')
             // }
-            const { db, view = KeyViewType.Tree, lastDB } = data
+            const { db, view = KeyViewType.Tree, lastDB, version } = data
             if (isEmpty(db)) {
                 throw new Error('no db loaded')
             }
@@ -248,6 +261,7 @@ const useBrowserStore = defineStore('browser', {
                 separator: this.getSeparator(name),
                 db: -1,
                 viewType: view,
+                version,
             })
             /** @type {Object.<number,RedisDatabaseItem>} **/
             const databases = {}
@@ -1728,6 +1742,66 @@ const useBrowserStore = defineStore('browser', {
             }
             try {
                 const { success, msg, data } = await DeleteKeys(server, db, keys, serialNo)
+                if (success) {
+                    canceled = get(data, 'canceled', false)
+                    deleted = get(data, 'deleted', [])
+                    failCount = get(data, 'failed', 0)
+                } else {
+                    $message.error(msg)
+                }
+            } finally {
+                msgRef.destroy()
+                // clear checked keys
+                const tab = useTabStore()
+                tab.setCheckedKeys(server)
+            }
+            // refresh model data
+            const deletedCount = size(deleted)
+            if (canceled) {
+                $message.info(i18nGlobal.t('dialogue.handle_cancel'))
+            } else if (failCount <= 0) {
+                // no fail
+                $message.success(i18nGlobal.t('dialogue.delete.completed', { success: deletedCount, fail: failCount }))
+            } else if (failCount >= deletedCount) {
+                // all fail
+                $message.error(i18nGlobal.t('dialogue.delete.completed', { success: deletedCount, fail: failCount }))
+            } else {
+                // some fail
+                $message.warning(i18nGlobal.t('dialogue.delete.completed', { success: deletedCount, fail: failCount }))
+            }
+            // update ui
+            timeout(100).then(async () => {
+                /** @type RedisServerState **/
+                const serverInst = this.servers[server]
+                if (serverInst != null) {
+                    let start = now()
+                    for (let i = 0; i < deleted.length; i++) {
+                        serverInst.removeKeyNode(deleted[i], false)
+                        if (now() - start > 300) {
+                            await timeout(100)
+                            start = now()
+                        }
+                    }
+                    serverInst.tidyNode('', true)
+                    serverInst.updateDBKeyCount(db, -deletedCount)
+                }
+            })
+        },
+
+        /**
+         * delete multiple keys by pattern
+         * @param server
+         * @param db
+         * @param pattern
+         * @return {Promise<void>}
+         */
+        async deleteByPattern(server, db, pattern) {
+            const msgRef = $message.loading(i18nGlobal.t('dialogue.delete.deleting'), { duration: 0, closable: true })
+            let deleted = []
+            let failCount = 0
+            let canceled = false
+            try {
+                const { success, msg, data } = await DeleteKeysByPattern(server, db, pattern)
                 if (success) {
                     canceled = get(data, 'canceled', false)
                     deleted = get(data, 'deleted', [])
