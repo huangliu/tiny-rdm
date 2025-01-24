@@ -14,10 +14,14 @@ import useDialogStore from 'stores/dialog.js'
 import { useI18n } from 'vue-i18n'
 import ContentToolbar from '@/components/content_value/ContentToolbar.vue'
 import ContentValueJson from '@/components/content_value/ContentValueJson.vue'
+import usePreferencesStore from 'stores/preferences.js'
+import { TextAlignType } from '@/consts/text_align_type.js'
+import { isMacOS } from '@/utils/platform.js'
 
 const themeVars = useThemeVars()
 const browserStore = useBrowserStore()
 const dialogStore = useDialogStore()
+const prefStore = usePreferencesStore()
 
 const props = defineProps({
     blank: Boolean,
@@ -127,7 +131,7 @@ const onReload = async (selDecode, selFormat) => {
 }
 
 const onKeyShortcut = (e) => {
-    // console.log(e)
+    const isCtrlOn = isMacOS() ? e.metaKey : e.ctrlKey
     switch (e.key) {
         case 'Delete':
             onDelete()
@@ -136,7 +140,7 @@ const onKeyShortcut = (e) => {
             onReload()
             return
         case 'r':
-            if (e.metaKey) {
+            if (isCtrlOn) {
                 onReload()
             }
             return
@@ -178,6 +182,11 @@ const onMatch = (match) => {
     loadData(true, false, match || '')
 }
 
+const onEntryTextAlignChanged = (align) => {
+    prefStore.editor.entryTextAlign = align !== TextAlignType.Left ? TextAlignType.Center : TextAlignType.Left
+    prefStore.savePreferences()
+}
+
 const contentRef = ref(null)
 const initContent = async () => {
     // onReload()
@@ -209,8 +218,6 @@ watch(() => data.value?.keyPath, initContent)
     <!-- FIXME: keep alive may cause virtual list null value error. -->
     <!-- <keep-alive v-else> -->
     <component
-        tabindex="0"
-        @keydown="onKeyShortcut"
         :is="valueComponents[data.type]"
         v-else
         ref="contentRef"
@@ -226,11 +233,15 @@ watch(() => data.value?.keyPath, initContent)
         :size="data.size"
         :ttl="data.ttl"
         :value="data.value"
+        tabindex="0"
+        :text-align="prefStore.entryTextAlign"
         @delete="onDelete"
+        @keydown="onKeyShortcut"
         @loadall="onLoadAll"
         @loadmore="onLoadMore"
         @match="onMatch"
-        @reload="onReload">
+        @reload="onReload"
+        @update:text-align="onEntryTextAlignChanged">
         <template #toolbar>
             <content-toolbar
                 :db="data.db"

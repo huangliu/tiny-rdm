@@ -295,6 +295,7 @@ const openConnection = async (name) => {
             tabStore.upsertTab({
                 server: name,
                 db: browserStore.getSelectedDB(name),
+                forceSwitch: true,
             })
         }
     } catch (e) {
@@ -542,7 +543,7 @@ const onCancelOpen = () => {
 </template>
 
 <style lang="scss" scoped>
-@import '@/styles/content';
+@use '@/styles/content';
 
 .connection-tree-wrapper {
     height: 100%;

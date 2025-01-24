@@ -18,6 +18,11 @@ import Edit from '@/components/icons/Edit.vue'
 import ContentSearchInput from '@/components/content_value/ContentSearchInput.vue'
 import { formatBytes } from '@/utils/byte_convert.js'
 import copy from 'copy-text-to-clipboard'
+import { TextAlignType } from '@/consts/text_align_type.js'
+import AlignLeft from '@/components/icons/AlignLeft.vue'
+import AlignCenter from '@/components/icons/AlignCenter.vue'
+import SwitchButton from '@/components/common/SwitchButton.vue'
+import { nativeRedisKey } from '@/utils/key_convert.js'
 
 const i18n = useI18n()
 const themeVars = useThemeVars()
@@ -50,9 +55,10 @@ const props = defineProps({
     },
     end: Boolean,
     loading: Boolean,
+    textAlign: Number,
 })
 
-const emit = defineEmits(['loadmore', 'loadall', 'reload', 'match'])
+const emit = defineEmits(['loadmore', 'loadall', 'reload', 'match', 'update:textAlign'])
 
 /**
  *
@@ -82,7 +88,7 @@ const fullEdit = ref(false)
 const scoreColumn = computed(() => ({
     key: 'score',
     title: () => i18n.t('common.score'),
-    align: 'center',
+    align: props.textAlign !== TextAlignType.Left ? 'center' : 'left',
     titleAlign: 'center',
     resizable: true,
     sorter: (row1, row2) => row1.s - row2.s,
@@ -131,7 +137,7 @@ const valueFilterOption = ref(null)
 const valueColumn = computed(() => ({
     key: 'value',
     title: () => i18n.t('common.value'),
-    align: isCode.value ? 'left' : 'center',
+    align: isCode.value ? 'left' : props.textAlign !== TextAlignType.Left ? 'center' : 'left',
     titleAlign: 'center',
     resizable: true,
     ellipsis: isCode.value
@@ -148,18 +154,17 @@ const valueColumn = computed(() => ({
           },
     filterOptionValue: valueFilterOption.value,
     className: inEdit.value ? 'clickable' : '',
-    filter(value, row) {
-        if (row.dv) {
-            return !!~row.dv.indexOf(value.toString())
-        }
-        return !!~row.v.indexOf(value.toString())
+    filter(filterValue, row) {
+        const val = row.dv || nativeRedisKey(row.v)
+        return !!~val.indexOf(filterValue.toString())
     },
     // sorter: (row1, row2) => row1.value - row2.value,
     render: (row) => {
+        const val = row.dv || nativeRedisKey(row.v)
         if (isCode.value) {
-            return h('pre', { class: 'pre-wrap' }, row.dv || row.v)
+            return h('pre', { class: 'pre-wrap' }, val)
         }
-        return row.dv || row.v
+        return val
     },
 }))
 
@@ -343,6 +348,15 @@ defineExpose({
                     @match-changed="onMatchInput" />
             </div>
             <div class="flex-item-expand"></div>
+            <switch-button
+                :icons="[AlignCenter, AlignLeft]"
+                :stroke-width="3.5"
+                :t-tooltips="['interface.text_align_center', 'interface.text_align_left']"
+                :value="props.textAlign"
+                size="medium"
+                unselect-stroke-width="3"
+                @update:value="(val) => emit('update:textAlign', val)" />
+            <n-divider vertical />
             <n-button-group>
                 <icon-button
                     :disabled="props.end || props.loading"

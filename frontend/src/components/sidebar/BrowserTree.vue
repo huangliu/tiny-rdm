@@ -26,6 +26,7 @@ import usePreferencesStore from 'stores/preferences.js'
 import { typesIconStyle } from '@/consts/support_redis_type.js'
 import { nativeRedisKey } from '@/utils/key_convert.js'
 import copy from 'copy-text-to-clipboard'
+import { isMacOS } from '@/utils/platform.js'
 
 const props = defineProps({
     server: String,
@@ -326,6 +327,7 @@ const handleKeyCopy = () => {
 }
 
 const onKeyShortcut = (e) => {
+    const isCtrlOn = isMacOS() ? e.metaKey : e.ctrlKey
     switch (e.key) {
         case 'ArrowUp':
             handleKeyUp()
@@ -340,7 +342,7 @@ const onKeyShortcut = (e) => {
             handleKeyRight()
             break
         case 'c':
-            if (e.metaKey) {
+            if (isCtrlOn) {
                 handleKeyCopy()
             }
             break
@@ -351,7 +353,7 @@ const onKeyShortcut = (e) => {
             handleSelectContextMenu('value_reload')
             break
         case 'r':
-            if (e.metaKey) {
+            if (isCtrlOn) {
                 handleSelectContextMenu('value_reload')
             }
             break
@@ -812,6 +814,7 @@ defineExpose({
             :expand-on-click="false"
             :expanded-keys="expandedKeys"
             :filter="(pattern, node) => includes(node.redisKey, pattern)"
+            :keyboard="false"
             :node-props="nodeProps"
             :pattern="props.pattern"
             :render-label="renderLabel"
@@ -822,7 +825,6 @@ defineExpose({
             check-strategy="child"
             class="fill-height"
             virtual-scroll
-            :keyboard="false"
             @keydown="onKeyShortcut"
             @update:selected-keys="onUpdateSelectedKeys"
             @update:expanded-keys="onUpdateExpanded"
@@ -848,7 +850,7 @@ defineExpose({
 </template>
 
 <style lang="scss" scoped>
-@import '@/styles/content';
+@use '@/styles/content';
 
 .browser-tree-wrapper {
     height: 100%;

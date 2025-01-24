@@ -156,12 +156,13 @@ func (b *browserService) OpenConnection(name string) (resp types.JSResp) {
 	} else {
 		// get database info
 		var res string
-		res, err = client.Info(ctx, "keyspace").Result()
-		if err != nil {
-			resp.Msg = "get server info fail:" + err.Error()
-			return
+		info := map[string]map[string]string{}
+		if res, err = client.Info(ctx, "keyspace").Result(); err != nil {
+			//resp.Msg = "get server info fail:" + err.Error()
+			//return
+		} else {
+			info = b.parseInfo(res)
 		}
-		info := b.parseInfo(res)
 
 		if totaldb <= 0 {
 			// cannot retrieve the database count by "CONFIG GET databases", try to get max index from keyspace
@@ -299,8 +300,8 @@ func (b *browserService) createRedisClient(ctx context.Context, selConn types.Co
 	return
 }
 
-// get a redis client from local cache or create a new open
-// if db >= 0, will also switch to db index
+// get a redis client from local cache or create a new one
+// if db >= 0, it will also switch to target database index
 func (b *browserService) getRedisClient(server string, db int) (item *connectionItem, err error) {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
@@ -325,6 +326,7 @@ func (b *browserService) getRedisClient(server string, db int) (item *connection
 	selConn := Connection().getConnection(server)
 	if selConn == nil {
 		err = fmt.Errorf("no match connection \"%s\"", server)
+		delete(b.connMap, server)
 		return
 	}
 
@@ -337,6 +339,7 @@ func (b *browserService) getRedisClient(server string, db int) (item *connection
 	connConfig.LastDB = db
 	client, err = b.createRedisClient(ctx, connConfig)
 	if err != nil {
+		delete(b.connMap, server)
 		return
 	}
 	item = &connectionItem{
@@ -873,7 +876,8 @@ func (b *browserService) GetKeyDetail(param types.KeyDetailParam) (resp types.JS
 					continue
 				}
 				items = append(items, types.ListEntryItem{
-					Value: val,
+					Index: len(items),
+					Value: strutil.EncodeRedisKey(val),
 				})
 				if doConvert {
 					if dv, _, _ := convutil.ConvertTo(val, param.Decode, param.Format, decoder); dv != val {
@@ -990,7 +994,7 @@ func (b *browserService) GetKeyDetail(param types.KeyDetailParam) (resp types.JS
 					}
 					for _, val := range loadedKey {
 						items = append(items, types.SetEntryItem{
-							Value: val,
+							Value: strutil.EncodeRedisKey(val),
 						})
 						if doConvert {
 							if dv, _, _ := convutil.ConvertTo(val, param.Decode, param.Format, decoder); dv != val {
@@ -1011,7 +1015,7 @@ func (b *browserService) GetKeyDetail(param types.KeyDetailParam) (resp types.JS
 				loadedKey, cursor, subErr = client.SScan(ctx, key, cursor, matchPattern, scanSize).Result()
 				items = make([]types.SetEntryItem, len(loadedKey))
 				for i, val := range loadedKey {
-					items[i].Value = val
+					items[i].Value = strutil.EncodeRedisKey(val)
 					if doConvert {
 						if dv, _, _ := convutil.ConvertTo(val, param.Decode, param.Format, decoder); dv != val {
 							items[i].DisplayValue = dv
@@ -1057,7 +1061,7 @@ func (b *browserService) GetKeyDetail(param types.KeyDetailParam) (resp types.JS
 					for i := 0; i < len(loadedVal); i += 2 {
 						if score, err = strconv.ParseFloat(loadedVal[i+1], 64); err == nil {
 							items = append(items, types.ZSetEntryItem{
-								Value: loadedVal[i],
+								Value: strutil.EncodeRedisKey(loadedVal[i]),
 								Score: score,
 							})
 							if doConvert {
@@ -1091,7 +1095,7 @@ func (b *browserService) GetKeyDetail(param types.KeyDetailParam) (resp types.JS
 						continue
 					}
 					entry := types.ZSetEntryItem{
-						Value: val,
+						Value: strutil.EncodeRedisKey(val),
 					}
 					if math.IsInf(z.Score, 1) {
 						entry.ScoreStr = "+inf"
@@ -1337,7 +1341,10 @@ func (b *browserService) SetKeyValue(param types.SetKeyParam) (resp types.JSResp
 		if err == nil && expiration > 0 {
 			client.Expire(ctx, key, expiration)
 		}
-		savedValue = param.Value
+		var ok bool
+		if savedValue, ok = param.Value.(string); !ok {
+			savedValue = ""
+		}
 	}
 
 	if err != nil {
@@ -1345,9 +1352,11 @@ func (b *browserService) SetKeyValue(param types.SetKeyParam) (resp types.JSResp
 		return
 	}
 	resp.Success = true
-	resp.Data = map[string]any{
-		"value": savedValue,
+	respData := map[string]any{}
+	if val, ok := savedValue.(string); ok {
+		respData["value"] = strutil.EncodeRedisKey(val)
 	}
+	resp.Data = respData
 	return
 }
 
@@ -1606,10 +1615,11 @@ func (b *browserService) SetListItem(param types.SetListParam) (resp types.JSRes
 	client, ctx := item.client, item.ctx
 	key := strutil.DecodeRedisKey(param.Key)
 	str := strutil.DecodeRedisKey(param.Value)
+	index := int64(param.Index)
 	var replaced, removed []types.ListReplaceItem
 	if len(str) <= 0 {
 		// remove from list
-		err = client.LSet(ctx, key, param.Index, "---VALUE_REMOVED_BY_TINY_RDM---").Err()
+		err = client.LSet(ctx, key, index, "---VALUE_REMOVED_BY_TINY_RDM---").Err()
 		if err != nil {
 			resp.Msg = err.Error()
 			return
@@ -1631,7 +1641,7 @@ func (b *browserService) SetListItem(param types.SetListParam) (resp types.JSRes
 			resp.Msg = fmt.Sprintf(`save to type "%s" fail: %s`, param.Format, err.Error())
 			return
 		}
-		err = client.LSet(ctx, key, param.Index, saveStr).Err()
+		err = client.LSet(ctx, key, index, saveStr).Err()
 		if err != nil {
 			resp.Msg = err.Error()
 			return

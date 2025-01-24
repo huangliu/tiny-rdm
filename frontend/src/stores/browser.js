@@ -386,9 +386,10 @@ const useBrowserStore = defineStore('browser', {
          * @param {number} db
          * @param {string|number[]} [key] null or blank indicate that update tab to display normal content (blank content or server status)
          * @param {boolean} [clearValue]
+         * @param {boolean} [redirect] redirect to key detail tab
          * @return {Promise<void>}
          */
-        async loadKeySummary({ server, db, key, clearValue }) {
+        async loadKeySummary({ server, db, key, clearValue, redirect = true }) {
             try {
                 const tab = useTabStore()
                 if (!isEmpty(key)) {
@@ -402,7 +403,7 @@ const useBrowserStore = defineStore('browser', {
                         const k = nativeRedisKey(key)
                         const binaryKey = k !== key
                         tab.upsertTab({
-                            subTab: BrowserTabType.KeyDetail,
+                            subTab: redirect === false ? null : BrowserTabType.KeyDetail,
                             server,
                             db,
                             type,
@@ -492,7 +493,7 @@ const useBrowserStore = defineStore('browser', {
                 if (showLoading) {
                     tab.updateLoading({ server, db, loading: true })
                 }
-                await this.loadKeySummary({ server, db, key, clearValue: true })
+                await this.loadKeySummary({ server, db, key, clearValue: true, redirect: false })
                 await this.loadKeyDetail({
                     server,
                     db,
@@ -708,17 +709,19 @@ const useBrowserStore = defineStore('browser', {
             }
             let match = prefix
             const separator = this.getSeparator(server)
-            if (!endsWith(match, separator)) {
-                match += separator + '*'
-            } else {
-                match += '*'
+            if (!isEmpty(match)) {
+                if (!endsWith(match, separator)) {
+                    match += separator + '*'
+                } else {
+                    match += '*'
+                }
             }
             // FIXME: ignore original match pattern due to redis not support combination matching
             const { match: originMatch, type: keyType, exact } = this.getKeyFilter(server)
             const { keys, maxKeys, success } = await this._loadKeys({
                 server,
                 db,
-                match: originMatch,
+                match: match || originMatch,
                 exact: false,
                 matchType: keyType,
                 all: true,
@@ -2090,7 +2093,7 @@ const useBrowserStore = defineStore('browser', {
             if (serverInst == null) {
                 serverInst = new RedisServerState({
                     name: server,
-                    separator: this.getSeparator(name),
+                    separator: this.getSeparator(server),
                 })
             }
             return serverInst.getFilter()

@@ -1,7 +1,7 @@
 <script setup>
 import ContentPane from './components/content/ContentPane.vue'
 import BrowserPane from './components/sidebar/BrowserPane.vue'
-import { computed, onMounted, reactive, ref, watchEffect } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref, watchEffect } from 'vue'
 import { debounce } from 'lodash'
 import { useThemeVars } from 'naive-ui'
 import Ribbon from './components/sidebar/Ribbon.vue'
@@ -13,7 +13,7 @@ import ContentLogPane from './components/content/ContentLogPane.vue'
 import ContentValueTab from '@/components/content/ContentValueTab.vue'
 import ToolbarControlWidget from '@/components/common/ToolbarControlWidget.vue'
 import { EventsOn, WindowIsFullscreen, WindowIsMaximised, WindowToggleMaximise } from 'wailsjs/runtime/runtime.js'
-import { isMacOS } from '@/utils/platform.js'
+import { isMacOS, isWindows } from '@/utils/platform.js'
 import iconUrl from '@/assets/images/icon.png'
 import ResizeableWrapper from '@/components/common/ResizeableWrapper.vue'
 import { extraTheme } from '@/utils/extra_theme.js'
@@ -57,6 +57,9 @@ const logoPaddingLeft = ref(10)
 const maximised = ref(false)
 const hideRadius = ref(false)
 const wrapperStyle = computed(() => {
+    if (isWindows()) {
+        return {}
+    }
     return hideRadius.value
         ? {}
         : {
@@ -65,6 +68,11 @@ const wrapperStyle = computed(() => {
           }
 })
 const spinStyle = computed(() => {
+    if (isWindows()) {
+        return {
+            backgroundColor: themeVars.value.bodyColor,
+        }
+    }
     return hideRadius.value
         ? {
               backgroundColor: themeVars.value.bodyColor,
@@ -109,12 +117,18 @@ onMounted(async () => {
     onToggleFullscreen(fullscreen === true)
     const maximised = await WindowIsMaximised()
     onToggleMaximize(maximised)
+    window.addEventListener('keydown', onKeyShortcut)
+})
+
+onUnmounted(() => {
+    window.removeEventListener('keydown', onKeyShortcut)
 })
 
 const onKeyShortcut = (e) => {
+    const isCtrlOn = isMacOS() ? e.metaKey : e.ctrlKey
     switch (e.key) {
         case 'w':
-            if (e.metaKey) {
+            if (isCtrlOn) {
                 // close current tab
                 const tabStore = useTabStore()
                 const currentTab = tabStore.currentTab
@@ -130,7 +144,7 @@ const onKeyShortcut = (e) => {
 <template>
     <!-- app content-->
     <n-spin :show="props.loading" :style="spinStyle" :theme-overrides="{ opacitySpinning: 0 }">
-        <div id="app-content-wrapper" :style="wrapperStyle" class="flex-box-v" tabindex="0" @keydown="onKeyShortcut">
+        <div id="app-content-wrapper" :style="wrapperStyle" class="flex-box-v">
             <!-- title bar -->
             <div
                 id="app-toolbar"

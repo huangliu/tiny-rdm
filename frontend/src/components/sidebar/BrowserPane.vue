@@ -311,6 +311,7 @@ watch(
                     <redis-type-selector
                         v-model:value="filterForm.type"
                         :disabled="!showTypeFilter"
+                        :disable-tip="$t('dialogue.filter.filter_type_not_support')"
                         @update:value="onSelectFilterType" />
                 </template>
             </content-search-input>
@@ -457,7 +458,7 @@ watch(
 </template>
 
 <style lang="scss" scoped>
-@import '@/styles/style';
+@use '@/styles/style' as style;
 
 :deep(.toggle-btn) {
     border-style: solid;
@@ -482,7 +483,7 @@ watch(
 }
 
 .nav-pane-bottom {
-    @include top-shadow(0.1);
+    @include style.top-shadow(0.1);
     color: v-bind('themeVars.iconColor');
     border-top: v-bind('themeVars.borderColor') 1px solid;
 }

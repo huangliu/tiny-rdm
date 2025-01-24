@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { TabItem } from '@/objects/tabItem.js'
 import useBrowserStore from 'stores/browser.js'
 import { i18nGlobal } from '@/utils/i18n.js'
+import { BrowserTabType } from '@/consts/browser_tab_type.js'
 
 const useTabStore = defineStore('tab', {
     /**
@@ -160,6 +161,7 @@ const useTabStore = defineStore('tab', {
          * @param {boolean} [clearValue]
          * @param {string} format
          * @param {string} decode
+         * @param {boolean} forceSwitch
          * @param {*} [value]
          */
         upsertTab({
@@ -176,9 +178,11 @@ const useTabStore = defineStore('tab', {
             clearValue,
             format = '',
             decode = '',
+            forceSwitch = false,
         }) {
             let tabIndex = findIndex(this.tabList, { name: server })
             if (tabIndex === -1) {
+                subTab = subTab || BrowserTabType.Status
                 const tabItem = new TabItem({
                     name: server,
                     title: server,
@@ -198,10 +202,11 @@ const useTabStore = defineStore('tab', {
                 })
                 this.tabList.push(tabItem)
                 tabIndex = this.tabList.length - 1
+                this._setActivatedIndex(tabIndex, true, subTab)
             } else {
                 const tab = this.tabList[tabIndex]
                 tab.blank = false
-                tab.subTab = subTab
+                tab.subTab = subTab || tab.subTab
                 // tab.title = db !== undefined ? `${server}/db${db}` : `${server}`
                 tab.title = server
                 tab.server = server
@@ -218,8 +223,10 @@ const useTabStore = defineStore('tab', {
                 if (clearValue === true) {
                     tab.value = undefined
                 }
+                if (forceSwitch === true) {
+                    this._setActivatedIndex(tabIndex, true, subTab)
+                }
             }
-            this._setActivatedIndex(tabIndex, true, subTab)
         },
 
         /**
@@ -289,9 +296,25 @@ const useTabStore = defineStore('tab', {
                 case 'list': // {v:string, dv:[string]}[]
                     tab.value = tab.value || []
                     if (prepend === true) {
-                        tab.value = [...entries, ...tab.value]
+                        const originList = tab.value
+                        const list = []
+                        let starIndex = 0
+                        for (const entry of entries) {
+                            entry.index = starIndex++
+                            list.push(entry)
+                        }
+                        for (const entry of originList) {
+                            entry.index = starIndex++
+                            list.push(entry)
+                        }
+                        tab.value = list
                     } else {
-                        tab.value.push(...entries)
+                        const list = tab.value
+                        let starIndex = list.length
+                        for (const entry of entries) {
+                            entry.index = starIndex++
+                            list.push(entry)
+                        }
                     }
                     tab.length += size(entries)
                     break
@@ -390,6 +413,7 @@ const useTabStore = defineStore('tab', {
                     for (const entry of entries) {
                         if (size(tab.value) > entry.index) {
                             tab.value[entry.index] = {
+                                index: entry.index,
                                 v: entry.v,
                                 dv: entry.dv,
                             }
