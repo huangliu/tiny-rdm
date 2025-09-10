@@ -103,18 +103,23 @@ jobs:
           CGO_ENABLED=1 wails build -clean -platform ${{ matrix.platform }} \
           -nsis -webview2 embed \
           -ldflags "-X main.version=v${{ steps.normalise_version.outputs.version }}"
-
-      - name: Codesign Windows NSIS installer
-        shell: powershell
-        working-directory: ./build/bin
+          
+      - name: Decode signing certificate
+        shell: bash
         run: |
-          echo "Creating certificate file"
-          New-Item -ItemType directory -Path certificate
-          Set-Content -Path certificate\certificate.txt -Value '${{ secrets.WIN_SIGNING_CERT }}'
-          certutil -decode certificate\certificate.txt certificate\certificate.pfx
-          echo "Signing TinyRDM installer"
-          & 'C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe' sign /td sha256 /tr http://timestamp.sectigo.com/?td=sha256 /f certificate\certificate.pfx /p '${{ secrets.WIN_SIGNING_CERT_PASSWORD }}' 'TinyRDM-${{ steps.normalise_platform_name.outputs.pname }}-installer.exe'
-
+          mkdir -p build/bin/certificate
+          echo "${{ secrets.WIN_SIGNING_CERT }}" > build/bin/certificate/certificate.txt
+          certutil -decode build/bin/certificate/certificate.txt build/bin/certificate/certificate.pfx
+      
+      - name: Codesign Windows NSIS installer
+        uses: azure/signtool@v1
+        with:
+          files: build/bin/TinyRDM-${{ steps.normalise_platform_name.outputs.pname }}-installer.exe
+          certificate: build/bin/certificate/certificate.pfx
+          password: ${{ secrets.WIN_SIGNING_CERT_PASSWORD }}
+          timestampUrl: http://timestamp.sectigo.com/?td=sha256
+          digestAlgorithm: sha256
+      
       - name: Rename installer
         working-directory: ./build/bin
         run: Rename-Item -Path "TinyRDM-${{ steps.normalise_platform_name.outputs.pname }}-installer.exe" -NewName "TinyRDM_Setup_${{ steps.normalise_version.outputs.version }}_${{ steps.normalise_platform.outputs.tag }}.exe"
