@@ -11,7 +11,7 @@ require (
 	github.com/redis/go-redis/v9 v9.12.1
 	github.com/vmihailenco/msgpack/v5 v5.4.1
 	github.com/vrischmann/userdir v0.0.0-20151206171402-20f291cebd68
-	github.com/wailsapp/wails/v2 v2.10.2
+	github.com/wailsapp/wails/v2 v2.9.2
 	golang.org/x/crypto v0.41.0
 	golang.org/x/net v0.43.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -43,7 +43,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
-	github.com/wailsapp/go-webview2 v1.0.21 // indirect
+	github.com/wailsapp/go-webview2 v1.0.18 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
 	golang.org/x/sys v0.35.0 // indirect
 	golang.org/x/text v0.28.0 // indirect
@@ -51,4 +51,4 @@ require (
 )
 
 // install latest wails: go install github.com/wailsapp/wails/v2/cmd/wails@latest
-// replace github.com/wailsapp/wails/v2 v2.10.2 => ~/go/pkg/mod
+// replace github.com/wailsapp/wails/v2 v2.9.2 => ~/go/pkg/mod
