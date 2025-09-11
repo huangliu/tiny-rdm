@@ -108,7 +108,7 @@ jobs:
         uses: dlemstra/code-sign-action@v1
         with:
           certificate: ${{ secrets.WIN_SIGNING_CERT }}
-          password: ${{ secrets.WIN_SIGNING_PASSWORD }}
+          password: ${{ secrets.WIN_SIGNING_CERT_PASSWORD }}
           files: ./build/bin/TinyRDM-${{ steps.normalise_platform_name.outputs.pname }}-installer.exe
 
       - name: Rename installer
