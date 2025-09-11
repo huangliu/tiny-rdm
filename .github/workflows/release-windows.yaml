@@ -110,11 +110,10 @@ jobs:
           certificate: ${{ secrets.WIN_SIGNING_CERT }}
           password: ${{ secrets.WIN_SIGNING_CERT_PASSWORD }}
           folder: ./build/bin
-          files: TinyRDM-${{ steps.normalise_platform_name.outputs.pname }}-installer.exe
 
       - name: Rename installer
         working-directory: ./build/bin
-        run: Rename-Item -Path "TinyRDM-${{ steps.normalise_platform_name.outputs.pname }}-installer.exe" -NewName "TinyRDM_Setup_${{ steps.normalise_version.outputs.version }}_${{ steps.normalise_platform.outputs.tag }}.exe"
+        run: Rename-Item -Path "Tiny RDM.exe" -NewName "TinyRDM_Setup_${{ steps.normalise_version.outputs.version }}_${{ steps.normalise_platform.outputs.tag }}.exe"
 
       - name: Upload release asset (Installer)
         uses: softprops/action-gh-release@v1
