@@ -109,7 +109,8 @@ jobs:
         with:
           certificate: ${{ secrets.WIN_SIGNING_CERT }}
           password: ${{ secrets.WIN_SIGNING_CERT_PASSWORD }}
-          files: ./build/bin/TinyRDM-${{ steps.normalise_platform_name.outputs.pname }}-installer.exe
+          folder: ./build/bin
+          files: TinyRDM-${{ steps.normalise_platform_name.outputs.pname }}-installer.exe
 
       - name: Rename installer
         working-directory: ./build/bin
