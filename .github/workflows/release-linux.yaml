@@ -127,7 +127,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Build frontend assets
         shell: bash
@@ -153,8 +153,12 @@ jobs:
         if: ${{ matrix.cross_compile }}
         shell: bash
         run: |
-          # Generate bindings and runtime files using native toolchain first
-          wails generate module
+          # First pass: build with native toolchain to generate frontend dist and bindings
+          CGO_ENABLED=1 wails build -platform linux/amd64 \
+          ${{ matrix.build_tags }} \
+          -ldflags "-X main.version=v${{ steps.normalise_version.outputs.version }} -X main.gaMeasurementID=${{ secrets.GA_MEASUREMENT_ID }} -X main.gaSecretKey=${{ secrets.LINUX_GA_SECRET }}" \
+          -o tiny-rdm-amd64
+          rm -f build/bin/tiny-rdm-amd64
 
       - name: Build wails app (cross-compile arm64 - compile)
         if: ${{ matrix.cross_compile }}
@@ -167,7 +171,7 @@ jobs:
           CGO_ENABLED=1 GOOS=linux GOARCH=arm64 wails build -platform ${{ matrix.platform }} \
           ${{ matrix.build_tags }} \
           -ldflags "-X main.version=v${{ steps.normalise_version.outputs.version }} -X main.gaMeasurementID=${{ secrets.GA_MEASUREMENT_ID }} -X main.gaSecretKey=${{ secrets.LINUX_GA_SECRET }}" \
-          -skipbindings -o tiny-rdm
+          -skipbindings -s -o tiny-rdm
 
       - name: Prepare deb template
         shell: bash
