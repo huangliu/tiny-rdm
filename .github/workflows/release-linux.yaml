@@ -153,12 +153,10 @@ jobs:
         if: ${{ matrix.cross_compile }}
         shell: bash
         run: |
-          # First pass: build with native toolchain to generate frontend dist and bindings
-          CGO_ENABLED=1 wails build -platform linux/amd64 \
-          ${{ matrix.build_tags }} \
-          -ldflags "-X main.version=v${{ steps.normalise_version.outputs.version }} -X main.gaMeasurementID=${{ secrets.GA_MEASUREMENT_ID }} -X main.gaSecretKey=${{ secrets.LINUX_GA_SECRET }}" \
-          -o tiny-rdm-amd64
-          rm -f build/bin/tiny-rdm-amd64
+          # Generate bindings using native Go (no CGO needed for this step)
+          CGO_ENABLED=0 wails generate bindings
+          # Build frontend
+          cd frontend && npm run build && cd ..
 
       - name: Build wails app (cross-compile arm64 - compile)
         if: ${{ matrix.cross_compile }}
