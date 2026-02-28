@@ -153,8 +153,8 @@ jobs:
         if: ${{ matrix.cross_compile }}
         shell: bash
         run: |
-          # Generate bindings using native Go (no CGO needed for this step)
-          CGO_ENABLED=0 wails generate bindings
+          # Generate wailsjs bindings (runtime + Go bindings) using native Go
+          wails generate module
           # Build frontend
           cd frontend && npm run build && cd ..
 
