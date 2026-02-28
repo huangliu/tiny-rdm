@@ -152,6 +152,13 @@ jobs:
       - name: Build wails app (cross-compile arm64)
         if: ${{ matrix.cross_compile }}
         shell: bash
+        run: |
+          # Generate bindings and runtime files using native toolchain first
+          wails generate module
+
+      - name: Build wails app (cross-compile arm64 - compile)
+        if: ${{ matrix.cross_compile }}
+        shell: bash
         env:
           CC: aarch64-linux-gnu-gcc
           CXX: aarch64-linux-gnu-g++
